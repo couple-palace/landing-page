@@ -1,20 +1,11 @@
-export default {
+/** @type {import('tailwindcss').Config} */
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}"
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
   ],
   theme: {
-    extend: {
-      colors: {
-        navy: {
-          800: '#1e293b',
-          900: '#0f172a'
-        }
-      },
-      borderRadius: {
-        'button': '9999px'
-      }
-    },
+    extend: {},
   },
   plugins: [],
 }
