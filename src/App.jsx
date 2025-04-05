@@ -1,291 +1,712 @@
 // The exported code uses Tailwind CSS. Install Tailwind CSS in your dev environment to ensure all styles work.
-
-import React, { useState } from 'react';
-// Consider adding these imports at the top if not already present in your project setup
-// import '@fortawesome/fontawesome-free/css/all.min.css'; // For Font Awesome icons
+import React, { useState } from "react";
 
 const App = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [userAnswers, setUserAnswers] = useState(Array(18).fill(null)); // Track answers for all questions
+  const [isQuizCompleted, setIsQuizCompleted] = useState(false);
+
+  // 퀴즈 데이터
+  const quizQuestions = [
+    {
+      question_idx: 1,
+      question: "Crush 생겼음. 너의 첫 행동은?",
+      answer: [
+        "이건 운명이다. DM 보낸다. 아님 대화 걸어야지 (안 하면 내가 뒤짐)",
+        "일단 주변 탐색부터. 스토리 염탐 + 지인 통해 성향 분석",
+        "친구한테 당장 소개팅 자리 만들어 달라고 함",
+        "그냥 혼자 짝사랑하다 그 사람이 애인 생기면 속상해하면서 마음 접음",
+      ],
+    },
+    {
+      question_idx: 2,
+      question: "연애할 때 제일 중요한 거?",
+      answer: [
+        "성격이랑 가치관이 맞아야 함",
+        "그냥 나를 좋아해줬으면 좋겠음",
+        "같이 있어도 안 피곤한 게 중요함",
+        "일단 재미있어야 함",
+      ],
+    },
+    {
+      question_idx: 3,
+      question: "연인과 싸웠음. 너의 태도는?",
+      answer: [
+        "일단 미안하다고 하고 화 풀어줌",
+        "나 서운했는데...? (근데 너가 먼저 눈치채고 풀어줬어야지)",
+        "'이거 왜 싸우는지 논리적으로 설명해봐' (감정보다 논리)",
+        "'아니 근데 내가 그걸 말로 해야 해…? ㅋㅋㅋ' (눈치 못 챘다고 더 빡침)",
+      ],
+    },
+    {
+      question_idx: 4,
+      question: "연애하면서 가장 듣고 싶은 말은?",
+      answer: [
+        "너랑 있으면 진짜 안정돼. 같이 있으면 아무 걱정 없음",
+        "너랑 있으면 그냥 다른 차원의 세계가 열리는 기분이야",
+        "'와 진짜 너만큼 내 기분 잘 맞춰주는 사람 처음 봄'",
+        "'우리 둘이 이렇게 만난 거 진짜 온 우주가 계획한 거 아닐까?'",
+      ],
+    },
+    {
+      question_idx: 5,
+      question: "연애할 때 나는?",
+      answer: [
+        "썸이 뭐야? 나는 직진함 (상대방 도망감)",
+        "밀당 좀 해야 하는데, 걍 하루 연락 안 해봄",
+        "나는 원래 연애에 신중한 타입^^ (안 하는 거 아님)",
+        "썸타다가 내가 먼저 정들면 큰일 남",
+      ],
+    },
+    {
+      question_idx: 6,
+      question: "카톡 스타일은?",
+      answer: [
+        "답장 0.3초 컷, 근데 대화 짧음",
+        "일단 읽고 하루 정도 고민함",
+        "답장 안 하고 인스타 스토리는 봄",
+        "카톡 확인했는데 깜빡함",
+      ],
+    },
+    {
+      question_idx: 7,
+      question: "연인과 싸우면 나는?",
+      answer: [
+        "팩트로 조지고 논리로 해결함",
+        "안 풀릴 때까지 개길 거임",
+        "말은 안 하는데 표정에서 티 다 남",
+        "눈물은 안 나는데 세상이 나한테만 가혹한 것 같음",
+      ],
+    },
+    {
+      question_idx: 8,
+      question: "연애 유지력은?",
+      answer: [
+        "한결같이 잘해줌, 근데 너무 한결같음",
+        "썸 타다가 갑자기 질려서 끝남",
+        "나는 잘 모르겠고 상대방이 떠남",
+        "일단 오래가는데 끝이 안 좋음",
+      ],
+    },
+    {
+      question_idx: 9,
+      question: "내 연애에서 가장 많이 하는 말?",
+      answer: [
+        "알아서 해 (그게 뭐든 내가 귀찮음)",
+        "그건 아니지 않냐?",
+        "내가 미안해 ㅠㅠ",
+        "근데 이게 진짜 맞는 거야?",
+      ],
+    },
+    {
+      question_idx: 10,
+      question: "내 연애력은?",
+      answer: [
+        "연애 안함 (단호)",
+        "걍 내 성격이랑 잘 맞는 사람 만나야 됨",
+        "잘 모르겠고 그냥 되는 대로 함",
+        "나름 잘한다고 생각하는데 ㅇㅇ",
+      ],
+    },
+    {
+      question_idx: 11,
+      question: "결혼 준비하는 너의 태도는?",
+      answer: [
+        "예산 정리, 플래너 계약, 신혼집 옵션까지 엑셀 정리 완료. (이미 신혼가전 사전조사 끝남)",
+        "아 그거 그냥 결혼식장에서 알아서 해주는 거 아님? (드레스 고르러 가기 전에도 배달시켜 먹음)",
+        "'결혼 체크리스트 100개 완성. 하루에 하나씩 해결하면 딱 맞음'",
+        "'결혼식은 그냥 둘이서 여행 가서 셀프웨딩 하면 되는 거 아님? 식 귀찮아'",
+      ],
+    },
+    {
+      question_idx: 12,
+      question: "결혼하면 주말에 뭐 함?",
+      answer: [
+        "아무것도 안 함. 주말=누워만 있기. 사람 건들면 죽음",
+        "아침부터 옷 입고 나감. 집에 있으면 답답함",
+        "각자 할 거 하다가 자연스럽게 저녁에 만나기",
+        "주말엔 같이 보내야지. 결혼까지 해놓고 혼자 논다고?",
+      ],
+    },
+    {
+      question_idx: 13,
+      question: "결혼하면 돈 관리는?",
+      answer: [
+        "각자 관리. 내 돈은 내 거, 네 돈은… 같이 잘 쓰자",
+        "공동 계좌 만들어야지. 돈 흐름은 한눈에 보여야 함",
+        "내가 관리할래. 근데 너도 카드 한도 모름",
+        "돈은 버는 사람이 쓰는 거지. 그게 나든 너든",
+      ],
+    },
+    {
+      question_idx: 14,
+      question: "집안일 분담 어떻게 할 건데?",
+      answer: [
+        "반반이지. 안 하면 싸움남",
+        "그냥 선착순임. 눈치 게임 시작",
+        "내가 요리할게, 근데 설거지는 너가 해야지?",
+        "집안일? 모르겠고 배달로 해결 가능",
+      ],
+    },
+    {
+      question_idx: 15,
+      question: "애 가질 거임?",
+      answer: [
+        "응. 근데 한 명만. 둘 이상은 좀…",
+        "응. 최소 둘은 있어야지. 외동 외롭잖아",
+        "그건 상황 봐야지. 지금은 모르겠음",
+        "아니. 내 삶도 벅참. 애까지 볼 여유 없음",
+      ],
+    },
+    {
+      question_idx: 16,
+      question: "배우자 성격 뭐가 중요함?",
+      answer: [
+        "책임감. 말 바꾸는 사람 싫음",
+        "대화 잘 되는 사람. 같이 사는데 말 안 통하면 뭐 하냐",
+        "웃기는 사람. 인생 빡센데 결혼도 빡세면 어쩔 거임",
+        "그냥 나를 잘 받아주는 사람. 나는 안 바뀜",
+      ],
+    },
+    {
+      question_idx: 17,
+      question: "신혼집 어디 살 건데?",
+      answer: [
+        "도심 한가운데. 편의시설 필수",
+        "조용한 교외. 강아지, 고양이랑 살고 싶음",
+        "해외. 한국 벗어나서 살고 싶음",
+        "부모님 집 근처. 도움 필요할 수도 있음",
+      ],
+    },
+    {
+      question_idx: 18,
+      question: "배우자 직업 중요함?",
+      answer: [
+        "중요하지. 안정적인 직업이면 좋겠음",
+        "직업보다는 성격. 가치관 맞아야 됨",
+        "돈 잘 벌면 솔직히 좋지 않냐?",
+        "내가 벌면 됨. 배우자는 상관 없음",
+      ],
+    },
+  ];
+
+  const handleAnswerSelect = (index) => {
+    // Store the selected answer
+    setSelectedAnswer(index);
+
+    // Create a copy of the current answers array
+    const newAnswers = [...userAnswers];
+    newAnswers[currentQuestionIndex] = index;
+    setUserAnswers(newAnswers);
+
+    // Move to the next question after a short delay
+    setTimeout(() => {
+      if (currentQuestionIndex < quizQuestions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        setSelectedAnswer(null); // Reset selected answer for the new question
+      } else {
+        // Quiz is complete
+        setIsQuizCompleted(true);
+        // Here you could navigate to results page or show results
+        console.log("Quiz completed! User answers:", newAnswers);
+      }
+    }, 500); // Short delay before moving to next question
+  };
+
+  // Function to go to previous question
+  const handlePrevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+      setSelectedAnswer(userAnswers[currentQuestionIndex - 1]);
+    }
+  };
+
+  // Function to manually go to next question without changing answer
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setSelectedAnswer(userAnswers[currentQuestionIndex + 1]);
+    } else if (userAnswers.every((answer) => answer !== null)) {
+      // If all questions have been answered
+      setIsQuizCompleted(true);
+    }
+  };
+
+  // Function to open test website in new tab
+  const openTestWebsite = () => {
+    window.open("https://www.couplegungjeon.store", "_blank", "noopener,noreferrer");
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen text-white font-sans" style={{ backgroundColor: "#2A2E3D" }}>
       {/* Header */}
-      <header className="bg-navy-900 text-white py-4 px-6 flex justify-between items-center">
-        <div className="flex items-center">
-          <span className="text-2xl font-bold text-yellow-400">커플궁전</span>
+      <header className="container mx-auto px-6 py-6 flex justify-between items-center">
+        <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500 flex items-center">
+          <i className="fas fa-crown mr-2 text-amber-400"></i>
+          커플 궁전
         </div>
-        <button className="bg-yellow-500 hover:bg-yellow-600 text-navy-900 px-4 py-2 rounded-button whitespace-nowrap text-sm font-medium cursor-pointer flex items-center">
+        <button className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-indigo-950 px-4 py-2 rounded-button whitespace-nowrap cursor-pointer flex items-center shadow-lg" onClick={openTestWebsite}>
           <i className="fas fa-share-alt mr-2"></i>
           공유하기
         </button>
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="w-full h-full bg-gradient-to-r from-navy-900 to-navy-800 opacity-95"></div>
-          <img 
-            src="https://public.readdy.ai/ai/img_res/c6eb179c3ebc153503cac0693268b424.jpg"
-            alt="Palace Background" 
-            className="absolute inset-0 w-full h-full object-cover object-top mix-blend-overlay opacity-40"
-          />
-        </div>
-        
-        <div className="relative z-10 container mx-auto px-6 py-20 flex flex-col md:flex-row items-center">
-          <div className="md:w-1/2 text-center md:text-left mb-10 md:mb-0">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              커플 궁전 프로필 테스트
-            </h1>
-            <p className="text-xl md:text-2xl text-yellow-300 mb-6">
-              연애, 결혼 가치관을 분석하고 커플궁전에 나가보세요!
-            </p>
-            <p className="text-gray-300 mb-8 text-lg">
-              재미있는 퀴즈로 당신만의 개성이 담긴 커플 궁전 프로필을 만들어 드려요
-            </p>
-            <button 
-              className="bg-yellow-500 hover:bg-yellow-600 text-navy-900 px-8 py-4 rounded-button text-lg font-bold cursor-pointer whitespace-nowrap shadow-lg transform transition-transform hover:scale-105"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              onClick={() => console.log('Start test clicked')} // Add navigation functionality when ready
-            >
-              {isHovered ? '지금 시작하기 →' : '테스트 시작하기'}
-            </button>
-          </div>
-          
-          <div className="md:w-1/2 flex justify-center">
-            <div className="relative w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-yellow-400 shadow-2xl">
-              <img 
-                src="https://public.readdy.ai/ai/img_res/5ebf2c1fa01e65fd3798afc361859a98.jpg"
-                alt="Profile Example" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-navy-900 p-4 text-center">
-                <h3 className="text-white text-2xl font-bold">김현범</h3>
-                <p className="text-yellow-300">직진하다 과속 딱지 끊긴 경찰관</p>
+      <section className="relative py-24 overflow-hidden">
+        <div
+          className="absolute inset-0 z-0"
+          style={{
+            backgroundImage:
+              "url('https://public.readdy.ai/ai/img_res/3f1086e80d0143f9a34aa13f17c97f2b.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.3,
+          }}
+        ></div>
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="md:w-1/2 text-center md:text-left mb-10 md:mb-0">
+              <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500 leading-tight">
+                커플 궁전
+                <br />
+                프로필 테스트
+              </h1>
+              <p className="text-xl md:text-2xl mb-6 text-amber-100">
+                연애, 결혼 가치관을 분석하고 커플궁전에 나가보세요!
+              </p>
+              <p className="text-lg mb-8 text-indigo-200">
+                재미있는 퀴즈로 당신만의 개성이 담긴 커플 궁전 프로필을 만들어
+                드려요
+              </p>
+              <button
+                className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-indigo-950 px-10 py-4 text-xl font-bold rounded-button whitespace-nowrap cursor-pointer transform transition duration-300 hover:scale-105 shadow-xl"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                onClick={openTestWebsite}
+              >
+                {isHovered ? "지금 시작하기 →" : "테스트 시작하기"}
+              </button>
+            </div>
+            <div className="md:w-1/2 flex justify-center">
+              <div className="relative w-80 h-80 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-amber-400 shadow-2xl transform transition-all duration-500 hover:scale-105">
+                <img
+                  src="https://public.readdy.ai/ai/img_res/e93af6054dd58bc8182aaa6254e594f2.jpg"
+                  alt="커플 궁전 프로필"
+                  className="w-full h-full object-cover object-top"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-indigo-950 p-6 text-center">
+                  <p className="text-xl font-bold text-amber-400">
+                    나만의 프로필
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-10 right-10 text-yellow-400 opacity-30">
-          <i className="fas fa-star text-3xl"></i>
-        </div>
-        <div className="absolute bottom-10 left-10 text-yellow-400 opacity-30">
-          <i className="fas fa-star text-3xl"></i>
+      </section>
+
+      {/* Quiz Example Section */}
+      <section className="py-16 backdrop-blur-sm" style={{ backgroundColor: "rgba(42, 46, 61, 0.5)" }}>
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500">
+            <i className="fas fa-question-circle mr-2"></i>
+            퀴즈 예시
+          </h2>
+
+          <div className="max-w-3xl mx-auto bg-indigo-800 bg-opacity-50 rounded-2xl overflow-hidden shadow-2xl border border-indigo-700">
+            {/* Progress Bar */}
+            <div className="w-full h-3 bg-indigo-700">
+              <div
+                className="h-full bg-gradient-to-r from-amber-400 to-amber-500"
+                style={{ width: `${(currentQuestionIndex / quizQuestions.length) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="p-8">
+              <div className="mb-8">
+                <p className="text-amber-400 font-medium mb-2">
+                  질문 {quizQuestions[currentQuestionIndex].question_idx}
+                </p>
+                <h3 className="text-2xl font-bold text-white mb-8">
+                  {quizQuestions[currentQuestionIndex].question}
+                </h3>
+
+                <div className="space-y-4">
+                  {quizQuestions[currentQuestionIndex].answer.map((answer, index) => (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-xl cursor-pointer transition-all duration-300 ${
+                        selectedAnswer === index
+                          ? "bg-gradient-to-r from-amber-500 to-amber-600 text-indigo-950 border-2 border-amber-300"
+                          : "bg-indigo-700 hover:bg-indigo-600 border-2 border-indigo-600"
+                      }`}
+                      onClick={() => handleAnswerSelect(index)}
+                    >
+                      <p className="font-medium">{answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-between mt-8">
+                <button
+                  className={`px-6 py-3 ${
+                    currentQuestionIndex > 0
+                      ? "bg-indigo-700 hover:bg-indigo-600"
+                      : "bg-indigo-700 opacity-50"
+                  } rounded-button whitespace-nowrap ${
+                    currentQuestionIndex > 0 ? "cursor-pointer" : "cursor-not-allowed"
+                  }`}
+                  onClick={handlePrevQuestion}
+                  disabled={currentQuestionIndex === 0}
+                >
+                  <i className="fas fa-arrow-left mr-2"></i>
+                  이전 질문
+                </button>
+                <button
+                  className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-indigo-950 rounded-button whitespace-nowrap cursor-pointer"
+                  onClick={currentQuestionIndex < quizQuestions.length - 1 ? handleNextQuestion : openTestWebsite}
+                >
+                  {currentQuestionIndex < quizQuestions.length - 1 ? "다음 질문" : "결과 보기"}
+                  <i className="fas fa-arrow-right ml-2"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Quiz Example */}
+          <div className="mt-16 max-w-sm mx-auto">
+            <h3 className="text-xl font-bold text-center mb-6 text-amber-400">
+              모바일 버전
+            </h3>
+            <div
+              className="bg-indigo-950 rounded-3xl overflow-hidden shadow-2xl border border-indigo-800 mx-auto"
+              style={{ maxWidth: "320px" }}
+            >
+              <img
+                src="https://static.readdy.ai/image/4d250d9e52492842633089b2e365d0bf/94ebcf10d133b8ab8dfc0de5d1204179.png"
+                alt="모바일 퀴즈 예시"
+                className="w-full"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="py-20" style={{ backgroundColor: "#2A2E3D" }}>
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center text-navy-900 mb-12">
-            <i className="fas fa-thumbtack text-yellow-500 mr-2"></i> 
-            프로젝트 주요 기능
+          <h2 className="text-3xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500">
+            <i className="fas fa-star mr-2"></i>
+            커플궁전 주요 기능
           </h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {/* Feature 1 */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-navy-800 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <i className="fas fa-question-circle text-yellow-400 text-2xl"></i>
+            <div className="bg-indigo-800 bg-opacity-50 rounded-2xl p-8 shadow-xl transform transition duration-300 hover:translate-y-[-10px] border border-indigo-700">
+              <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
+                <i className="fas fa-id-card text-2xl"></i>
               </div>
-              <h3 className="text-xl font-bold text-navy-900 mb-4 text-center">
-                <span className="text-yellow-500">✅</span> 퀴즈 진행
+              <h3 className="text-2xl font-bold text-center mb-6 text-amber-400">
+                프로필 관리
               </h3>
-              <ul className="text-gray-700 space-y-2">
+              <ul className="text-indigo-100 space-y-4">
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>사용자가 <strong>한 페이지당 하나의 질문</strong>을 풀며 진행</span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>질문 목록(questionsList) 기반 프로필 생성</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span><strong>진행도 표시 (Progress Bar)</strong></span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>직업(job) 정보 포함 프로필 생성</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>모든 질문을 완료하면 <strong>사용자 정보 입력 페이지로 이동</strong></span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>프로필 조회/수정/삭제 기능</span>
                 </li>
               </ul>
             </div>
-            
             {/* Feature 2 */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-navy-800 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <i className="fas fa-user-edit text-yellow-400 text-2xl"></i>
+            <div className="bg-indigo-800 bg-opacity-50 rounded-2xl p-8 shadow-xl transform transition duration-300 hover:translate-y-[-10px] border border-indigo-700">
+              <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
+                <i className="fas fa-image text-2xl"></i>
               </div>
-              <h3 className="text-xl font-bold text-navy-900 mb-4 text-center">
-                <span className="text-yellow-500">✅</span> 사용자 입력
+              <h3 className="text-2xl font-bold text-center mb-6 text-amber-400">
+                사진 처리
               </h3>
-              <ul className="text-gray-700 space-y-2">
+              <ul className="text-indigo-100 space-y-4">
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>사용자가 <strong>이름, 직업, 프로필 사진</strong> 입력</span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>이미지 배경 제거 기능</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>입력 완료 후 <strong>서버로 데이터를 한 번에 전송</strong></span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>이미지 업로드 및 처리</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>개인 정보 보호를 위한 안전한 데이터 처리</span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>프로필 이미지 커스터마이징</span>
                 </li>
               </ul>
             </div>
-            
             {/* Feature 3 */}
-            <div className="bg-gray-50 rounded-lg p-8 shadow-md hover:shadow-lg transition-shadow">
-              <div className="w-16 h-16 bg-navy-800 rounded-full flex items-center justify-center mb-6 mx-auto">
-                <i className="fas fa-chart-pie text-yellow-400 text-2xl"></i>
+            <div className="bg-indigo-800 bg-opacity-50 rounded-2xl p-8 shadow-xl transform transition duration-300 hover:translate-y-[-10px] border border-indigo-700">
+              <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-16 h-16 rounded-full flex items-center justify-center mb-6 mx-auto shadow-lg">
+                <i className="fas fa-code text-2xl"></i>
               </div>
-              <h3 className="text-xl font-bold text-navy-900 mb-4 text-center">
-                <span className="text-yellow-500">✅</span> 결과 페이지
+              <h3 className="text-2xl font-bold text-center mb-6 text-amber-400">
+                기술 스택
               </h3>
-              <ul className="text-gray-700 space-y-2">
+              <ul className="text-indigo-100 space-y-4">
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>서버에서 닉네임 및 성향 분석 결과를 반환</span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>React 19, Vite 6, React Router DOM 7</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span><strong>결과 화면 렌더링 & 공유 기능 제공</strong></span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>상태 관리: Zustand 5, HTTP: Axios</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-yellow-500 mr-2">•</span>
-                  <span>SNS에 결과 공유 가능</span>
+                  <i className="fas fa-check text-amber-400 mt-1 mr-3"></i>
+                  <span>스타일링: Tailwind CSS 4, Framer Motion 12</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </section>
-      
-      {/* Results Preview Section */}
-      <section className="py-16 bg-navy-900 text-white">
+
+      {/* Preview Section */}
+      <section className="py-20" style={{ backgroundColor: "#2A2E3D" }}>
         <div className="container mx-auto px-6">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-3xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500">
+            <i className="fas fa-crown mr-2"></i>
             이런 프로필을 받아보세요
           </h2>
-          
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-            <div className="w-full md:w-1/3 bg-navy-800 rounded-lg overflow-hidden shadow-xl">
-              <div className="relative">
-                <img 
-                  src="https://public.readdy.ai/ai/img_res/5a726344fbd8c102f24ed7971ab1a70d.jpg"
-                  alt="Result Example 1" 
-                  className="w-full h-80 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-900 opacity-60"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-2xl font-bold">김지은</h3>
-                  <p className="text-yellow-300">열정 가득한 마케팅 전문가</p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-16">
+            <div className="w-full md:w-1/2 max-w-md bg-indigo-900 rounded-2xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-105">
+              <div className="p-1 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-300">
+                <div className="bg-indigo-900 p-8 rounded-t-lg">
+                  <div className="text-center">
+                    <h3 className="text-2xl font-bold text-amber-400 mb-2">
+                      문상휘
+                    </h3>
+                    <p className="text-indigo-200 mb-6">
+                      '연애는 경찰, 연락은 수사 중'
+                    </p>
+                    <div className="w-64 h-64 mx-auto relative rounded-full overflow-hidden border-4 border-amber-400 shadow-lg">
+                      <img
+                        src="https://static.readdy.ai/image/4d250d9e52492842633089b2e365d0bf/59f3cd7874a9e0564b3f037415208a03.png"
+                        alt="프로필 예시"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-8 space-y-4">
+                    <div className="flex justify-between items-center p-3 bg-indigo-800 rounded-lg">
+                      <span className="text-indigo-200">결혼 가치관:</span>
+                      <span className="text-amber-400 font-medium">
+                        엑셀로 짜는 결혼 예산
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-indigo-800 rounded-lg">
+                      <span className="text-indigo-200">주말의 모습:</span>
+                      <span className="text-amber-400 font-medium">
+                        주말은 외출의 날
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-indigo-800 rounded-lg">
+                      <span className="text-indigo-200">MBTI:</span>
+                      <span className="text-amber-400 font-medium">ISFJ</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="mb-3">
-                  <p className="text-sm text-gray-400">결혼 가치관</p>
-                  <p className="font-medium">경제적 독립을 중시</p>
-                </div>
-                <div className="mb-3">
-                  <p className="text-sm text-gray-400">도심에서 살고 싶음</p>
-                  <p className="font-medium">1~2명 아이 의향</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">MBTI</p>
-                  <p className="font-bold text-yellow-400">ENFJ</p>
-                </div>
+              <div className="bg-indigo-800 p-4 flex justify-center">
+                <button className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-indigo-950 px-6 py-3 rounded-button whitespace-nowrap cursor-pointer shadow-lg" onClick={openTestWebsite}>
+                  <i className="fas fa-share-alt mr-2"></i>
+                  프로필 공유하기
+                </button>
               </div>
             </div>
-            
-            <div className="w-full md:w-1/3 bg-navy-800 rounded-lg overflow-hidden shadow-xl">
-              <div className="relative">
-                <img 
-                  src="https://public.readdy.ai/ai/img_res/cdf61a71bddddfa8a42d43a0e8168967.jpg"
-                  alt="Result Example 2" 
-                  className="w-full h-80 object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-navy-900 opacity-60"></div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                  <h3 className="text-2xl font-bold">박준호</h3>
-                  <p className="text-yellow-300">꿈을 쫓는 스타트업 CEO</p>
-                </div>
-              </div>
-              <div className="p-4">
-                <div className="mb-3">
-                  <p className="text-sm text-gray-400">결혼 가치관</p>
-                  <p className="font-medium">가족 중심의 가치관</p>
-                </div>
-                <div className="mb-3">
-                  <p className="text-sm text-gray-400">교외에서 살고 싶음</p>
-                  <p className="font-medium">2~3명 아이 의향</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">MBTI</p>
-                  <p className="font-bold text-yellow-400">ENTJ</p>
-                </div>
+            <div className="w-full md:w-1/2 max-w-md">
+              <div className="bg-indigo-900 rounded-2xl p-8 shadow-2xl border border-indigo-700">
+                <h3 className="text-2xl font-bold mb-6 text-amber-400">
+                  결혼가치관
+                </h3>
+                <ul className="space-y-6">
+                  <li className="flex items-start">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0 shadow-lg">
+                      <i className="fas fa-calculator"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xl text-amber-300 mb-2">
+                        1. 엑셀로 짜는 결혼 예산
+                      </h4>
+                      <p className="text-indigo-200">
+                        결혼 준비는 다이너마이트급으로 화려하게! 예산 정리부터
+                        플래너 계약까지 엑셀로 완벽하게 정리하자. 신혼가전 사전
+                        조사 완료는 기본, 이건 마치 결혼 준비의 마스터 클래스야!
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0 shadow-lg">
+                      <i className="fas fa-home"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xl text-amber-300 mb-2">
+                        2. 주말은 외출의 날
+                      </h4>
+                      <p className="text-indigo-200">
+                        집에서 뒹굴 뒹굴하는 건 NO! 결혼 후 주말은 아침부터 옷을
+                        차려입고 나가서 신나게 놀아야 해. 집에 있으면
+                        답답하니까, 즐길 준비가 되어 있는 사람만 오세요!
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-indigo-950 w-10 h-10 rounded-full flex items-center justify-center mr-4 flex-shrink-0 shadow-lg">
+                      <i className="fas fa-utensils"></i>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xl text-amber-300 mb-2">
+                        3. 웃음이 넘치는 가정
+                      </h4>
+                      <p className="text-indigo-200">
+                        결혼 후에는 인생의 힘든 순간들을 웃음으로 날려버리자!
+                        웃기는 사람과 함께해야 인생이 더 빛세지. 자, 이제 당신의
+                        유머 감각을 테스트해볼 시간!
+                      </p>
+                    </div>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* CTA Section */}
-      <section className="py-16 bg-white">
+      <section className="py-20" style={{ backgroundColor: "#2A2E3D" }}>
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-3xl font-bold text-navy-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500">
             지금 바로 나만의 프로필 만들기
           </h2>
-          <p className="text-gray-600 mb-10 max-w-2xl mx-auto">
-            간단한 퀴즈를 통해 당신의 연애와 결혼 가치관을 분석하고, 
-            특별한 커플 궁전 프로필을 받아보세요. 이미 <span className="font-bold text-yellow-500">10,000+</span>명이 참여했습니다!
+          <p className="text-xl mb-10 text-indigo-200 max-w-2xl mx-auto">
+            재미있는 질문에 답하고 당신만의 특별한 커플 궁전 프로필을
+            받아보세요. 친구들과 공유하고 서로의 결과를 비교해보세요!
           </p>
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-navy-900 px-10 py-4 rounded-button text-xl font-bold cursor-pointer whitespace-nowrap shadow-lg transform transition-transform hover:scale-105">
+          <button className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-indigo-950 px-10 py-5 text-xl font-bold rounded-button whitespace-nowrap cursor-pointer transform transition duration-300 hover:scale-105 shadow-xl" onClick={openTestWebsite}>
             테스트 시작하기
           </button>
-          <div className="mt-8 flex justify-center space-x-6">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-navy-900">10,000+</p>
-              <p className="text-gray-600">참여자</p>
+          <div className="mt-16 flex flex-wrap justify-center gap-8 md:gap-16">
+            <div className="text-center bg-indigo-900 bg-opacity-50 p-6 rounded-xl shadow-lg">
+              <p className="text-4xl font-bold text-amber-400 mb-2">15,000+</p>
+              <p className="text-indigo-200">테스트 참여자</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-navy-900">4,500+</p>
-              <p className="text-gray-600">공유</p>
+            <div className="text-center bg-indigo-900 bg-opacity-50 p-6 rounded-xl shadow-lg">
+              <p className="text-4xl font-bold text-amber-400 mb-2">8,500+</p>
+              <p className="text-indigo-200">SNS 공유</p>
             </div>
-            <div className="text-center">
-              <p className="text-3xl font-bold text-navy-900">4.8/5</p>
-              <p className="text-gray-600">만족도</p>
+            <div className="text-center bg-indigo-900 bg-opacity-50 p-6 rounded-xl shadow-lg">
+              <p className="text-4xl font-bold text-amber-400 mb-2">4.8/5</p>
+              <p className="text-indigo-200">사용자 만족도</p>
             </div>
           </div>
         </div>
       </section>
-      
-      {/* Footer */}
-      <footer className="bg-navy-900 text-white py-8">
-        <div className="container mx-auto px-6">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <p className="text-xl font-bold text-yellow-400">커플궁전</p>
-              <p className="text-sm text-gray-400">© 2025 커플궁전 프로필 테스트. All rights reserved.</p>
-            </div>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white cursor-pointer">
-                <i className="fab fa-instagram text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white cursor-pointer">
-                <i className="fab fa-facebook text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white cursor-pointer">
-                <i className="fab fa-twitter text-xl"></i>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white cursor-pointer">
-                <i className="fab fa-youtube text-xl"></i>
+
+      {/* Team Section */}
+      <section className="py-20" style={{ backgroundColor: "rgba(42, 46, 61, 0.7)" }}>
+  <div className="container mx-auto px-6">
+    <h2 className="text-3xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500">
+      <i className="fas fa-users mr-2"></i>
+      개발팀 소개
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+
+      {/* Team Member Card (복붙해서 사용 가능) */}
+      {[
+        { name: '이지민', role: '프론트엔드, UI', img: 'https://avatars.githubusercontent.com/u/131771046?v=4', github: 'https://github.com/clicelee' },
+        { name: '이주원', role: '프론트엔드', img: 'https://avatars.githubusercontent.com/u/89000730?v=4', github: 'https://github.com/juwonleee' },
+        { name: '이강희', role: '백엔드 개발', img: 'https://avatars.githubusercontent.com/u/79368467?v=4', github: 'https://github.com/Ganghee-Lee-0522' },
+        { name: '이소민', role: '백엔드, AI 개발', img: 'https://avatars.githubusercontent.com/u/132176662?v=4', github: 'https://github.com/somin850' },
+      ].map((member, idx) => (
+        <div
+          key={idx}
+          className="bg-indigo-800 bg-opacity-50 rounded-2xl overflow-hidden shadow-xl transform transition duration-300 hover:translate-y-[-10px] border border-indigo-700"
+        >
+          <div className="h-48 overflow-hidden">
+            <img
+              src={member.img}
+              alt={member.name}
+              className="w-full h-full object-cover object-top"
+            />
+          </div>
+          <div className="p-6">
+            <h3 className="text-xl font-bold text-amber-400 mb-2">{member.name}</h3>
+            <p className="text-indigo-200 mb-4">{member.role}</p>
+            <div className="mt-4">
+              <a
+                href={member.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-indigo-100 hover:text-amber-300 transition"
+              >
+                <i className="fab fa-github text-xl mr-2"></i>
+                GitHub
               </a>
             </div>
           </div>
-          <div className="mt-6 text-center md:text-left">
-            <p className="text-sm text-gray-400">
-              본 테스트는 재미를 위한 것이며, 전문적인 심리 분석이 아닙니다.
-            </p>
+        </div>
+      ))}
+      
+    </div>
+  </div>
+      </section>
+
+
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-indigo-800" style={{ backgroundColor: "#2A2E3D" }}>
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-8 md:mb-0">
+              <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-yellow-500 mb-4 flex items-center">
+                <i className="fas fa-crown mr-2 text-amber-400"></i>
+                커플 궁전
+              </div>
+              <p className="text-indigo-300">
+                © 2025 커플 궁전 프로필 테스트. All rights reserved.
+              </p>
+            </div>
+            <div className="flex space-x-6">
+              <a
+                href="#"
+                className="text-indigo-300 hover:text-amber-400 transition-colors duration-300 cursor-pointer"
+              >
+                <i className="fab fa-instagram text-2xl"></i>
+              </a>
+              <a
+                href="#"
+                className="text-indigo-300 hover:text-amber-400 transition-colors duration-300 cursor-pointer"
+              >
+                <i className="fab fa-facebook text-2xl"></i>
+              </a>
+              <a
+                href="#"
+                className="text-indigo-300 hover:text-amber-400 transition-colors duration-300 cursor-pointer"
+              >
+                <i className="fab fa-twitter text-2xl"></i>
+              </a>
+              <a
+                href="#"
+                className="text-indigo-300 hover:text-amber-400 transition-colors duration-300 cursor-pointer"
+              >
+                <i className="fab fa-kakao text-2xl"></i>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
@@ -294,4 +715,3 @@ const App = () => {
 };
 
 export default App;
-
