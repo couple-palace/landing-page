@@ -70,7 +70,8 @@ const App = () => {
       } else {
         // Quiz is complete
         setIsQuizCompleted(true);
-        // Here you could navigate to results page or show results
+        // Show the modal when the quiz is completed automatically
+        setShowModal(true);
         console.log("Quiz completed! User answers:", newAnswers);
       }
     }, 500); // Short delay before moving to next question
@@ -450,7 +451,7 @@ const App = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {[
-              { name: '이지민', role: '프론트엔드, UI', img: 'https://avatars.githubusercontent.com/u/131771046?v=4', github: 'https://github.com/clicelee' },
+              { name: '이지민', role: '프론트엔드, UI 디자인', img: 'https://avatars.githubusercontent.com/u/131771046?v=4', github: 'https://github.com/clicelee' },
               { name: '이주원', role: '프론트엔드', img: 'https://avatars.githubusercontent.com/u/89000730?v=4', github: 'https://github.com/juwonleee' },
               { name: '이강희', role: '백엔드 개발', img: 'https://avatars.githubusercontent.com/u/79368467?v=4', github: 'https://github.com/Ganghee-Lee-0522' },
               { name: '이소민', role: '백엔드, AI 개발', img: 'https://avatars.githubusercontent.com/u/132176662?v=4', github: 'https://github.com/somin850' },
