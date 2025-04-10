@@ -152,7 +152,7 @@ const App = () => {
             <div className="md:w-1/2 flex justify-center">
               <div className="relative w-60 h-60 md:w-96 md:h-96 rounded-full overflow-hidden border-4 border-[#f8e9ca] shadow-2xl transform transition-all duration-500 hover:scale-105">
                 <img
-                  src="https://www.couplegungjeon.store/assets/profile_sample-CPtVUX1d.png"
+                  src="/sample_image.png"
                   alt="커플 궁전 프로필"
                   className="w-full h-full object-cover object-top"
                 />
